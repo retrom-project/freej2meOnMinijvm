@@ -1,6 +1,8 @@
 package java.awt.image;
 
 import org.mini.gui.GGraphics;
+import org.mini.awt.ArgbBlitter;
+import org.mini.awt.ArgbPixelCodec;
 import org.mini.gui.GObject;
 
 import java.awt.*;
@@ -54,13 +56,7 @@ class BufferedImageGraphics extends Graphics2D {
             data[pixelIndex] = argb;
             return;
         }
-        int dst = data[pixelIndex];
-        int inverse = 255 - alpha;
-        int red = (((argb >>> 16) & 0xff) * alpha + ((dst >>> 16) & 0xff) * inverse) / 255;
-        int green = (((argb >>> 8) & 0xff) * alpha + ((dst >>> 8) & 0xff) * inverse) / 255;
-        int blue = ((argb & 0xff) * alpha + (dst & 0xff) * inverse) / 255;
-        int dstAlpha = alpha + (((dst >>> 24) & 0xff) * inverse) / 255;
-        data[pixelIndex] = (dstAlpha << 24) | (red << 16) | (green << 8) | blue;
+        data[pixelIndex] = ArgbPixelCodec.sourceOver(argb, data[pixelIndex]);
     }
 
     private static void fillPixels(int[] data, int offset, int length, int argb) {
@@ -887,6 +883,14 @@ class BufferedImageGraphics extends Graphics2D {
             int minY = Math.max(clipY, 0);
             int maxX = Math.min(clipX + clipW, imgW);
             int maxY = Math.min(clipY + clipH, imgH);
+            // LCD presentation normally copies an unscaled image at integer coordinates.
+            // Avoid two floating-point inverse transforms for every destination pixel.
+            if (m00 == 1 && m11 == 1 && m01 == 0 && m10 == 0
+                    && m02 == (int) m02 && m12 == (int) m12) {
+                ArgbBlitter.draw(src, srcW, srcH, dst, imgW, (int) m02, (int) m12,
+                        minX, minY, maxX, maxY);
+                return true;
+            }
             for (int y = minY; y < maxY; y++) {
                 for (int x = minX; x < maxX; x++) {
                     double dx = x - m02;

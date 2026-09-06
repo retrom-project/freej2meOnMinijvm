@@ -8,6 +8,9 @@ import org.mini.gui.event.GSizeChangeListener;
 import org.mini.layout.loader.XuiAppHolder;
 import org.recompile.freej2me.MiniJvmFrontend;
 import org.recompile.mobile.MobilePlatform;
+import org.recompile.mobile.PlatformGraphics;
+import org.recompile.mobile.PixelBlitter;
+import org.mini.awt.NativePixels;
 
 import com.ebsee.emu.audio.MiniJvmAudioBackendImpl;
 
@@ -130,6 +133,14 @@ public class J2meEmu extends GApplication implements XuiAppHolder {
         String jarLocation = args.length > 0 ? args[0] : "file:/game.jar";
         String dataPath = args.length > 1 ? args[1] : "/home/web_user";
         MobilePlatform.miniJvmAudioBackend = new MiniJvmAudioBackendImpl();
+        PlatformGraphics.pixelBlitter = new PixelBlitter() {
+            public boolean draw(int[] source, int sourceOffset, int sourceStride,
+                                int[] destination, int destinationOffset, int destinationStride,
+                                int width, int height, boolean processAlpha) {
+                return NativePixels.blit(source, sourceOffset, sourceStride, destination,
+                    destinationOffset, destinationStride, width, height, processAlpha);
+            }
+        };
         System.out.println("miniJVM audio backend installed");
         Map<String, String> profile = CompatibilityProfileReader.read();
         new MiniJvmFrontend(jarLocation, dataPath, 240, 320, 60, profile);

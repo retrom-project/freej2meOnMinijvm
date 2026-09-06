@@ -13,9 +13,12 @@ public class Canvas extends Component {
             public boolean paint(long vg) {
                 if (bimg != null) {
                     //bimg.setRGB(bimg.getWidth() / 2, bimg.getHeight() / 2, 0xffffffff);
-                    bimg.getImage().updateImage();
-                    GToolkit.drawImage(vg, bimg.getImage(), getX(), getY(), getW(), getH(), false, 1.0f);
-                    GForm.flush();
+                    // getImage converts the whole Java ARGB raster to native RGBA.
+                    ImageMutable image = bimg.getImage();
+                    image.updateImage();
+                    GToolkit.drawImage(vg, image, getX(), getY(), getW(), getH(), false, 1.0f);
+                    // Component.repaint already requests presentation. Scheduling another
+                    // frame here continuously reconverts/uploads an unchanged game screen.
                 }
                 //GToolkit.drawRect(vg, getX(), getY(), getW(), getH(), GToolkit.getStyle().getHighColor(), false);
                 return super.paint(vg);
