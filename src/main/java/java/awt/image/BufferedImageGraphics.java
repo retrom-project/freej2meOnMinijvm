@@ -2,6 +2,7 @@ package java.awt.image;
 
 import org.mini.gui.GGraphics;
 import org.mini.awt.ArgbBlitter;
+import org.mini.awt.ArgbPixelCodec;
 import org.mini.gui.GObject;
 
 import java.awt.*;
@@ -55,13 +56,7 @@ class BufferedImageGraphics extends Graphics2D {
             data[pixelIndex] = argb;
             return;
         }
-        int dst = data[pixelIndex];
-        int inverse = 255 - alpha;
-        int red = (((argb >>> 16) & 0xff) * alpha + ((dst >>> 16) & 0xff) * inverse) / 255;
-        int green = (((argb >>> 8) & 0xff) * alpha + ((dst >>> 8) & 0xff) * inverse) / 255;
-        int blue = ((argb & 0xff) * alpha + (dst & 0xff) * inverse) / 255;
-        int dstAlpha = alpha + (((dst >>> 24) & 0xff) * inverse) / 255;
-        data[pixelIndex] = (dstAlpha << 24) | (red << 16) | (green << 8) | blue;
+        data[pixelIndex] = ArgbPixelCodec.sourceOver(argb, data[pixelIndex]);
     }
 
     private static void fillPixels(int[] data, int offset, int length, int argb) {

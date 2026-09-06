@@ -18,17 +18,9 @@ public final class ArgbBlitter {
                 int pixel = source[src];
                 int alpha = pixel >>> 24;
                 if (alpha == 255) destination[dst] = pixel;
-                else if (alpha != 0) destination[dst] = blend(pixel, destination[dst], alpha);
+                else if (alpha != 0) destination[dst] = ArgbPixelCodec.sourceOver(pixel, destination[dst]);
             }
         }
     }
 
-    private static int blend(int source, int destination, int alpha) {
-        int inverse = 255 - alpha;
-        int red = (((source >>> 16) & 255) * alpha + ((destination >>> 16) & 255) * inverse) / 255;
-        int green = (((source >>> 8) & 255) * alpha + ((destination >>> 8) & 255) * inverse) / 255;
-        int blue = ((source & 255) * alpha + (destination & 255) * inverse) / 255;
-        int resultAlpha = alpha + ((destination >>> 24) * inverse) / 255;
-        return (resultAlpha << 24) | (red << 16) | (green << 8) | blue;
-    }
 }
