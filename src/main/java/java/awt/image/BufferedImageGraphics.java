@@ -1,6 +1,7 @@
 package java.awt.image;
 
 import org.mini.gui.GGraphics;
+import org.mini.awt.ArgbBlitter;
 import org.mini.gui.GObject;
 
 import java.awt.*;
@@ -887,6 +888,14 @@ class BufferedImageGraphics extends Graphics2D {
             int minY = Math.max(clipY, 0);
             int maxX = Math.min(clipX + clipW, imgW);
             int maxY = Math.min(clipY + clipH, imgH);
+            // LCD presentation normally copies an unscaled image at integer coordinates.
+            // Avoid two floating-point inverse transforms for every destination pixel.
+            if (m00 == 1 && m11 == 1 && m01 == 0 && m10 == 0
+                    && m02 == (int) m02 && m12 == (int) m12) {
+                ArgbBlitter.draw(src, srcW, srcH, dst, imgW, (int) m02, (int) m12,
+                        minX, minY, maxX, maxY);
+                return true;
+            }
             for (int y = minY; y < maxY; y++) {
                 for (int x = minX; x < maxX; x++) {
                     double dx = x - m02;
