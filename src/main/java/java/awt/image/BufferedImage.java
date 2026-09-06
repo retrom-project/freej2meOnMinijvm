@@ -3,6 +3,7 @@ package java.awt.image;
 import org.mini.gui.GImage;
 import org.mini.gui.ImageMutable;
 import org.mini.awt.ArgbPixelCodec;
+import org.mini.awt.NativePixels;
 
 import javax.imageio.WritableRenderedImage;
 import java.awt.*;
@@ -221,6 +222,10 @@ public class BufferedImage extends java.awt.Image implements WritableRenderedIma
 
     void syncPixelsFromNative() {
         byte[] data = gimg.getData().array();
+        if (NativePixels.convert(pixels, data, pixels.length, false)) {
+            pixelsInitialized = true;
+            return;
+        }
         for (int i = 0; i < pixels.length; i++) {
             int offset = i * BYTE_PER_PIXEL;
             pixels[i] = ArgbPixelCodec.read(data, offset);
@@ -235,6 +240,7 @@ public class BufferedImage extends java.awt.Image implements WritableRenderedIma
     private void syncPixelsToNative() {
         if (!pixelsInitialized) return;
         byte[] data = gimg.getData().array();
+        if (NativePixels.convert(pixels, data, pixels.length, true)) return;
         for (int i = 0; i < pixels.length; i++) {
             ArgbPixelCodec.write(data, i * BYTE_PER_PIXEL, pixels[i]);
         }

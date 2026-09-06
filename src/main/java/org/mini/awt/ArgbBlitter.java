@@ -11,6 +11,9 @@ public final class ArgbBlitter {
         int top = Math.max(clipTop, y);
         int right = (int) Math.min((long) clipRight, (long) x + sourceWidth);
         int bottom = (int) Math.min((long) clipBottom, (long) y + sourceHeight);
+        if (left >= right || top >= bottom) return;
+        if (NativePixels.blit(source, (top - y) * sourceWidth + left - x, sourceWidth,
+                destination, top * destinationWidth + left, destinationWidth, right - left, bottom - top, true)) return;
         for (int row = top; row < bottom; row++) {
             int src = (row - y) * sourceWidth + left - x;
             int dst = row * destinationWidth + left;
