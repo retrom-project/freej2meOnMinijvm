@@ -132,6 +132,11 @@ public class J2meEmu extends GApplication implements XuiAppHolder {
     public static void main(String args[]) {
         String jarLocation = args.length > 0 ? args[0] : "file:/game.jar";
         String dataPath = args.length > 1 ? args[1] : "/home/web_user";
+        Map<String, String> profile = CompatibilityProfileReader.read();
+        MiniJvmFrontend.Profile settings = MiniJvmFrontend.Profile.from(profile, 240, 320, 60);
+        // Graphics owns static HUD fonts. Configure their device dimensions
+        // before installing any backend that initializes PlatformGraphics.
+        javax.microedition.lcdui.Font.setScreenSize(settings.width, settings.height);
         MobilePlatform.miniJvmAudioBackend = new MiniJvmAudioBackendImpl();
         PlatformGraphics.pixelBlitter = new PixelBlitter() {
             public boolean draw(int[] source, int sourceOffset, int sourceStride,
@@ -142,7 +147,6 @@ public class J2meEmu extends GApplication implements XuiAppHolder {
             }
         };
         System.out.println("miniJVM audio backend installed");
-        Map<String, String> profile = CompatibilityProfileReader.read();
         new MiniJvmFrontend(jarLocation, dataPath, 240, 320, 60, profile);
     }
 

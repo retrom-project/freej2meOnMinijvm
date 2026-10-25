@@ -44,8 +44,14 @@ public class Sequencer {
         if (clip != null) clip.loop(count);
     }
 
-    public void setSequence(Sequence sequence) {
-        // FreeJ2ME provides streams; the object form is retained for API parity.
+    public void setSequence(Sequence sequence) throws InvalidMidiDataException {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            MidiSystem.write(sequence, 0, output);
+            setSequence(new ByteArrayInputStream(output.toByteArray()));
+        } catch (IOException failure) {
+            throw new InvalidMidiDataException(failure.toString());
+        }
     }
 
     public void setSequence(InputStream stream) throws IOException {
